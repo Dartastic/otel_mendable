@@ -1,15 +1,16 @@
-// Licensed under the Dartastic Pro Software License Agreement.
+// Licensed under the Apache License, Version 2.0
 // Copyright 2025-2026 Mindful Software LLC d/b/a Dartastic.io, All rights reserved.
 
-import 'package:dartastic_opentelemetry/dartastic_opentelemetry.dart';
+import 'package:dartastic_opentelemetry_api/dartastic_opentelemetry_api.dart';
 
 import 'otel_mendable_suppression.dart';
 
 const _tracerName = 'dartastic_otel_libs_mendable';
 
-Tracer _tracer() => OTel.tracerProvider().getTracer(_tracerName);
+APITracer _tracer() => OTelAPI.tracerProvider().getTracer(_tracerName);
 
 class MendableResult {
+  /// Creates a result.
   const MendableResult({
     this.projectId,
     this.anonKey,
@@ -73,8 +74,13 @@ class MendableResult {
   final int? statusCode;
 }
 
+/// What a traced call returned: the value for the caller plus fields
+/// recorded on the span.
 class MendableCallResult<T> {
+  /// Creates a call result.
   const MendableCallResult({required this.value, this.result});
+
+  /// The value returned to the caller.
   final T value;
   final MendableResult? result;
 }
@@ -101,98 +107,98 @@ Future<T> tracedMendable<T>({
   final span = _tracer().startSpan(
     'mendable $operation',
     kind: SpanKind.client,
-    attributes: OTel.attributesFromMap(m),
+    attributes: OTelAPI.attributesFromMap(m),
   );
   try {
     final r = await invoke();
     if (r.result != null) {
       final extras = <Attribute<Object>>[];
       if (r.result!.projectId != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'mendable.project.id',
           r.result!.projectId!,
         ));
       }
       if (r.result!.anonKey != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'mendable.anon_user.id',
           r.result!.anonKey!,
         ));
       }
       if (r.result!.conversationId != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'mendable.conversation.id',
           r.result!.conversationId!,
         ));
       }
       if (r.result!.messageId != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'mendable.message.id',
           r.result!.messageId!,
         ));
       }
       if (r.result!.requestType != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'mendable.request.type',
           r.result!.requestType!,
         ));
       }
       if (r.result!.modelName != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'mendable.model.name',
           r.result!.modelName!,
         ));
       }
       if (r.result!.tokensIn != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'mendable.tokens.in',
           r.result!.tokensIn!,
         ));
       }
       if (r.result!.tokensOut != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'mendable.tokens.out',
           r.result!.tokensOut!,
         ));
       }
       if (r.result!.sourcesReturned != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'mendable.sources.returned',
           r.result!.sourcesReturned!,
         ));
       }
       if (r.result!.confidence != null) {
-        extras.add(OTel.attributeDouble(
+        extras.add(OTelAPI.attributeDouble(
           'mendable.confidence',
           r.result!.confidence!,
         ));
       }
       if (r.result!.feedbackSubmitted != null) {
-        extras.add(OTel.attributeBool(
+        extras.add(OTelAPI.attributeBool(
           'mendable.feedback.submitted',
           r.result!.feedbackSubmitted!,
         ));
       }
       if (r.result!.feedbackVote != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'mendable.feedback.vote',
           r.result!.feedbackVote!,
         ));
       }
       if (r.result!.crawledPagesDelta != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'mendable.crawled.pages_delta',
           r.result!.crawledPagesDelta!,
         ));
       }
       if (r.result!.sourceConnectorKind != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'mendable.source.connector_kind',
           r.result!.sourceConnectorKind!,
         ));
       }
       if (r.result!.statusCode != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'http.response.status_code',
           r.result!.statusCode!,
         ));
@@ -203,13 +209,13 @@ Future<T> tracedMendable<T>({
           );
         }
       }
-      if (extras.isNotEmpty) span.addAttributes(OTel.attributes(extras));
+      if (extras.isNotEmpty) span.addAttributes(OTelAPI.attributes(extras));
     }
     return r.value;
   } catch (e, st) {
-    span.addAttributes(OTel.attributes([
-      OTel.attributeString(
-        ErrorResource.errorType.key,
+    span.addAttributes(OTelAPI.attributes([
+      OTelAPI.attributeString(
+        ErrorAttributes.errorType.key,
         e.runtimeType.toString(),
       ),
     ]));
